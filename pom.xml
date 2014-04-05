@@ -4,7 +4,7 @@
 
    <!-- For release: mvn release:perform -Darguments=-Dgpg.passphrase=PASSPHRASE -->
 
-   <groupId>com.zaxxer</groupId>
+   <groupId>com.atscale.engine.hikaricp</groupId>
    <artifactId>HikariCP</artifactId>
    <version>1.3.6-SNAPSHOT</version>
    <packaging>bundle</packaging>

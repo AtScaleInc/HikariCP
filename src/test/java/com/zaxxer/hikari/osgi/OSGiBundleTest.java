@@ -75,7 +75,7 @@ public class OSGiBundleTest
         {
             if(bundle != null)
             {
-                if(bundle.getSymbolicName().equals("com.zaxxer.HikariCP"))
+                if(bundle.getSymbolicName().equals("com.atscale.engine.hikaricp.HikariCP"))
                 {
                     bundleFound = true;
                     if(bundle.getState() == Bundle.ACTIVE)
