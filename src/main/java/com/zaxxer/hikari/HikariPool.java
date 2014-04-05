@@ -65,6 +65,7 @@ public final class HikariPool implements HikariPoolMBean, IBagStateListener
     private final boolean isReadOnly;
     private final boolean isRegisteredMbeans;
     private final boolean isJdbc4ConnectionTest;
+    private final boolean isQueryTimeoutSupported;
     private final long leakDetectionThreshold;
     private final AtomicInteger totalConnections;
     private final Timer houseKeepingTimer;
@@ -105,6 +106,7 @@ public final class HikariPool implements HikariPoolMBean, IBagStateListener
         this.isReadOnly = configuration.isReadOnly();
         this.isRegisteredMbeans = configuration.isRegisterMbeans();
         this.isJdbc4ConnectionTest = configuration.isJdbc4ConnectionTest();
+        this.isQueryTimeoutSupported = configuration.isQueryTimeoutSupported();
         this.leakDetectionThreshold = configuration.getLeakDetectionThreshold();
         this.transactionIsolation = configuration.getTransactionIsolation();
         this.metricsTracker = (configuration.isRecordMetrics() ? new CodaHaleMetricsTracker(configuration.getPoolName()) : new MetricsTracker());
@@ -386,7 +388,9 @@ public final class HikariPool implements HikariPoolMBean, IBagStateListener
                 Statement statement = connection.createStatement();
                 try
                 {
-                    statement.setQueryTimeout((int) TimeUnit.MILLISECONDS.toSeconds(timeoutMs));
+                    if (isQueryTimeoutSupported) {
+                        statement.setQueryTimeout((int) TimeUnit.MILLISECONDS.toSeconds(timeoutMs));
+                    }
                     statement.executeQuery(configuration.getConnectionTestQuery());
                 }
                 finally

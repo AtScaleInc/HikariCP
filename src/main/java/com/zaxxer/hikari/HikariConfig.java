@@ -69,6 +69,7 @@ public class HikariConfig implements HikariConfigMBean
     private boolean isReadOnly;
     private boolean isInitializationFailFast;
     private boolean isJdbc4connectionTest;
+    private boolean isQueryTimeoutSupported;
     private boolean isIsolateInternalQueries;
     private boolean isRecordMetrics;
     private boolean isRegisterMbeans;
@@ -99,6 +100,7 @@ public class HikariConfig implements HikariConfigMBean
         poolName = "HikariPool-" + poolNumber++;
         isRecordMetrics = false;
         transactionIsolation = -1;
+        isQueryTimeoutSupported = true;
     }
 
     /**
@@ -419,6 +421,16 @@ public class HikariConfig implements HikariConfigMBean
     public void setJdbc4ConnectionTest(boolean useIsValid)
     {
         this.isJdbc4connectionTest = useIsValid;
+    }
+
+    public boolean isQueryTimeoutSupported()
+    {
+      return isQueryTimeoutSupported;
+    }
+
+    public void setQueryTimeoutSupported(boolean queryTimeoutSupported)
+    {
+      this.isQueryTimeoutSupported = queryTimeoutSupported;
     }
 
     public boolean isReadOnly()
