@@ -359,7 +359,11 @@ public final class HikariPool implements HikariPoolMBean, IBagStateListener
             long now = System.currentTimeMillis();
             if (now - lastConnectionFailureTime > 1000 || isDebug)
             {
-                LOGGER.warn("Connection attempt to database failed (not every attempt is logged): {}", e.getMessage(), (isDebug ? e : null));
+                if (isDebug) {
+                    LOGGER.warn("Connection attempt to database failed (not every attempt is logged)", e);
+                } else {
+                    LOGGER.warn("Connection attempt to database failed (not every attempt is logged): {}", e.getMessage());
+                }
             }
             lastConnectionFailureTime = now;
             return false;
