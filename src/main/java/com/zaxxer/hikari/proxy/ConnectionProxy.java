@@ -63,6 +63,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
     private boolean isTransactionIsolationDirty;
     private volatile long lastAccess;
     private long uncloseTime;
+    private boolean isHiveConnection;
 
     private StackTraceElement[] leakTrace;
     private TimerTask leakTask;
@@ -99,6 +100,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         isReadOnlyDirty = defaultReadOnly;
         isAutoCommitDirty = true;
         isTransactionIsolationDirty = true;
+        isHiveConnection = connection.getClass().getSimpleName().equals("HiveConnection");
     }
 
     /** {@inheritDoc} */
@@ -189,35 +191,35 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
     @Override
     public final void resetConnectionState() throws SQLException
     {
-        if (!delegate.getAutoCommit())
+        if (!delegate.getAutoCommit() && !isHiveConnection)
         {
             delegate.rollback();
         }
 
-        if (isReadOnlyDirty)
+        if (isReadOnlyDirty && !isHiveConnection)
         {
             delegate.setReadOnly(defaultReadOnly);
             isReadOnlyDirty = false;
         }
 
-        if (isAutoCommitDirty)
+        if (isAutoCommitDirty && !isHiveConnection)
         {
             delegate.setAutoCommit(defaultAutoCommit);
             isAutoCommitDirty = false;
         }
 
-        if (isTransactionIsolationDirty)
+        if (isTransactionIsolationDirty && !isHiveConnection)
         {
             delegate.setTransactionIsolation(defaultIsolationLevel);
             isTransactionIsolationDirty = false;
         }
 
-        if (isCatalogDirty && defaultCatalog != null)
+        if (isCatalogDirty && defaultCatalog != null && !isHiveConnection)
         {
             delegate.setCatalog(defaultCatalog);
             isCatalogDirty = false;
         }
-        
+
         delegate.clearWarnings();
     }
 
@@ -241,7 +243,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
             openStatements.remove(statement);
         }
     }
-    
+
     // ***********************************************************************
     //                        Internal methods
     // ***********************************************************************
@@ -290,7 +292,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         if (!isClosed)
         {
             isClosed = true;
-            
+
             if (leakTask != null)
             {
                 leakTask.cancel();
@@ -570,8 +572,10 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         checkClosed();
         try
         {
-            delegate.setAutoCommit(autoCommit);
-            isAutoCommitDirty = (autoCommit != defaultAutoCommit);
+            if (!isHiveConnection) {
+                delegate.setAutoCommit(autoCommit);
+                isAutoCommitDirty = (autoCommit != defaultAutoCommit);
+            }
         }
         catch (SQLException e)
         {
@@ -587,8 +591,10 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         checkClosed();
         try
         {
-            delegate.setReadOnly(readOnly);
-            isReadOnlyDirty = (readOnly != defaultReadOnly);
+            if (!isHiveConnection) {
+                delegate.setReadOnly(readOnly);
+                isReadOnlyDirty = (readOnly != defaultReadOnly);
+            }
         }
         catch (SQLException e)
         {
@@ -604,8 +610,10 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         checkClosed();
         try
         {
-            delegate.setTransactionIsolation(level);
-            isTransactionIsolationDirty = (level != defaultIsolationLevel);
+            if (!isHiveConnection) {
+                delegate.setTransactionIsolation(level);
+                isTransactionIsolationDirty = (level != defaultIsolationLevel);
+            }
         }
         catch (SQLException e)
         {
@@ -620,14 +628,16 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         checkClosed();
         try
         {
-            delegate.setCatalog(catalog);
-            isCatalogDirty = !catalog.equals(defaultCatalog);
+            if (!isHiveConnection) {
+                delegate.setCatalog(catalog);
+                isCatalogDirty = !catalog.equals(defaultCatalog);
+            }
         }
         catch (SQLException e)
         {
             checkException(e);
             throw e;
-        }        
+        }
     }
 
     /** {@inheritDoc} */
