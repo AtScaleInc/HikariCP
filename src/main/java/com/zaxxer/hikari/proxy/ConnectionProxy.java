@@ -100,7 +100,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
         isReadOnlyDirty = defaultReadOnly;
         isAutoCommitDirty = true;
         isTransactionIsolationDirty = true;
-        isHiveConnection = connection.getClass().getSimpleName().equals("HiveConnection");
+        isHiveConnection = (connection.getClass().getSimpleName().equals("HiveConnection") || connection.getClass().getSimpleName().indexOf("Impala") > -1);
     }
 
     /** {@inheritDoc} */
